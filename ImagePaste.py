@@ -18,7 +18,11 @@ class ImagePasteCommand(sublime_plugin.TextCommand):
 			view.run_command("paste")
 			return
 		for pos in view.sel():
-			view.insert(edit, pos.begin(), "![](%s)" % rel_fn)
+			# print("scope name: %r" % (view.scope_name(pos.begin())))
+			if 'text.html.markdown' in view.scope_name(pos.begin()):
+				view.insert(edit, pos.begin(), "![](%s)" % rel_fn)
+			else:
+				view.insert(edit, pos.begin(), "%s" % rel_fn)
 			# only the first cursor add the path
 			break
 			
@@ -57,4 +61,3 @@ class ImagePasteCommand(sublime_plugin.TextCommand):
 
 		print("save file: " + abs_filename + "\nrel " + rel_filename)
 		return abs_filename, rel_filename
-
