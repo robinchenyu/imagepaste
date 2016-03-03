@@ -1,4 +1,5 @@
-import sublime, sublime_plugin
+# import sublime
+import sublime_plugin
 import os
 try:
 	from PIL import ImageGrab
@@ -52,7 +53,7 @@ class ImagePasteCommand(sublime_plugin.TextCommand):
 		i = 0
 		while True:
 			# relative file path
-			rel_filename = os.path.join("./%s/%s%d.png" % (fn_without_ext, fn_without_ext, i))
+			rel_filename = os.path.join("%s/%s%d.png" % (fn_without_ext, fn_without_ext, i))
 			# absolute file path
 			abs_filename = os.path.join(dirname, "%s%d.png" % ( fn_without_ext, i))
 			if not os.path.exists(abs_filename):
