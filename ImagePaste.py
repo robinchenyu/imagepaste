@@ -1,14 +1,15 @@
 # import sublime
 import sublime_plugin
 import os
-try:
-	from PIL import ImageGrab
-	from PIL import ImageFile
-except ImportError:
-	import sys
-	sys.path.append(os.path.dirname(__file__))
-	from PIL import ImageGrab
-	from PIL import ImageFile
+
+package_file = os.path.normpath(os.path.abspath(__file__))
+package_path = os.path.dirname(package_file)
+lib_path =  os.path.join(package_path, "lib")
+if lib_path not in sys.path:
+    sys.path.append(lib_path)
+    print(sys.path)
+from PIL import ImageGrab
+from PIL import ImageFile
 
 
 class ImagePasteCommand(sublime_plugin.TextCommand):
