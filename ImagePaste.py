@@ -1,6 +1,7 @@
 # import sublime
 import sublime_plugin
 import os
+import sys
 
 package_file = os.path.normpath(os.path.abspath(__file__))
 package_path = os.path.dirname(package_file)
