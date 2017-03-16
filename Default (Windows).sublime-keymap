@@ -3,4 +3,8 @@
         "keys": ["ctrl+v"], 
         "command": "image_paste",
     },
+    { 
+    	"keys": ["ctrl+alt+m"],
+    	"command": "image_preview",
+    },
 ]

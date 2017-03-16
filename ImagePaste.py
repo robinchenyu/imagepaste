@@ -1,7 +1,8 @@
-# import sublime
+import sublime
 import sublime_plugin
 import os
 import sys
+import re
 
 package_file = os.path.normpath(os.path.abspath(__file__))
 package_path = os.path.dirname(package_file)
@@ -11,6 +12,7 @@ if lib_path not in sys.path:
     print(sys.path)
 from PIL import ImageGrab
 from PIL import ImageFile
+from PIL import Image
 
 
 class ImagePasteCommand(sublime_plugin.TextCommand):
@@ -64,3 +66,51 @@ class ImagePasteCommand(sublime_plugin.TextCommand):
 
 		print("save file: " + abs_filename + "\nrel " + rel_filename)
 		return abs_filename, rel_filename
+
+
+class ImagePreviewCommand(sublime_plugin.TextCommand):
+	def __init__(self, *args):
+	#	self.view = view
+		super(ImagePreviewCommand, self).__init__(*args)	    
+		# self.phantom_set = sublime.PhantomSet(self.view)
+		self.displayed = False
+
+
+	def get_line(self):
+		v = self.view
+		rows, _ = v.rowcol(v.size())
+		for row in range(rows+1):
+			pt = v.text_point(row, 0)
+			tp_line = v.line(pt)
+			line = v.substr(tp_line)
+			yield tp_line, line
+		raise StopIteration
+	def run(self, edit):
+		print("run phantom")
+		view = self.view
+		dirname = os.path.dirname(view.file_name())
+		for tp, line in self.get_line():
+			m=re.search(r'!\[([^\]]*)\]\(([^)]*)\)', line)
+			if m:
+				name, file1 = m.group(1), m.group(2)
+				message = ""
+				file2 = os.path.join(dirname, file1)
+				# print("%s = %s" % (name, file1))
+				region = tp
+				with Image.open(file2) as im:
+					# print("file: %s with size: %d %d" % (file1, im.width, im.height))
+					message = '''<body>
+					<img width="%d" height="%d" src="file://%s"></img>
+					</body>''' % (im.width, im.height, file2)
+				if len(name) == 0:
+					name = file1
+
+		# phantom = sublime.Phantom(region, messag e, sublime.LAYOUT_BLOCK)
+				print("message %s" % message)
+				if not self.displayed:
+					self.view.add_phantom(name, region, message, sublime.LAYOUT_BLOCK)
+				else:
+					self.view.erase_phantoms(name)
+		# self.phantom_set.update([phantom])
+		# view.show_popup('<img src="file://c://msys64/home/chenyu/diary/diary/diary8.jpg">')
+		self.displayed = not self.displayed
