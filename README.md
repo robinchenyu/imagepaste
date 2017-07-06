@@ -18,4 +18,5 @@ Take a screenshot, then just ctrl+v to paste it. It will save a png file to curr
  
 ![](./gif/imagepaste.gif)
 3. Preview within Sublime Text.
+
 ![](./gif/imgPreview.gif)
