@@ -17,3 +17,5 @@ Take a screenshot, then just ctrl+v to paste it. It will save a png file to curr
 2. When copy to other buffer, it will display only the image path pic_path at the cursor. 
  
 ![](./gif/imagepaste.gif)
+3. Preview within Sublime Text.
+![](./gif/imgPreview.gif)
