@@ -1,0 +1,10 @@
+[
+    { 
+        "keys": ["ctrl+alt+g"], 
+        "command": "image_grab",
+    },
+    { 
+    	"keys": ["ctrl+alt+m"],
+    	"command": "image_preview",
+    },
+]
