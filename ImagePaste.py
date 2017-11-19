@@ -5,7 +5,11 @@ import sys
 import re
 import subprocess
 import shutil
+from imp import reload
 
+print(sys.getdefaultencoding())
+reload(sys)
+# sys.setdefaultencoding('utf-8')
 
 # package_file = os.path.normpath(os.path.abspath(__file__))
 # package_path = os.path.dirname(package_file)
@@ -54,7 +58,7 @@ class ImagePasteCommand(ImageCommand, sublime_plugin.TextCommand):
 
 	def paste(self):
 		# ImageFile.LOAD_TRUNCATED_IMAGES = True
-		dirname = os.path.dirname(self.view.file_name())
+		dirname = os.path.dirname(__file__)
 		command = ['/usr/bin/python3', os.path.join(dirname, 'bin/imageutil.py'), 'save']
 		abs_fn, rel_fn = self.get_filename()
 		command.append(abs_fn)
@@ -115,7 +119,7 @@ class ImageGrabCommand(ImageCommand, sublime_plugin.TextCommand):
 
 	def paste(self):
 		# ImageFile.LOAD_TRUNCATED_IMAGES = True
-		dirname = os.path.dirname(self.view.file_name())
+		dirname = os.path.dirname(__file__)
 		command = ['/usr/bin/python3', os.path.join(dirname, 'bin/imageutil.py'), 'grab']
 		abs_fn, rel_fn = self.get_filename()
 		tempfile1 = "/tmp/imagepaste1.png"
@@ -185,13 +189,13 @@ class ImagePreviewCommand(ImageCommand, sublime_plugin.TextCommand):
 	def run(self, edit):
 		print("run phantom")
 		view = self.view
-		dirname = os.path.dirname(view.file_name())
+		dirname = os.path.dirname(__file__)
 		for tp, line in self.get_line():
 			m=re.search(r'!\[([^\]]*)\]\(([^)]*)\)', line)
 			if m:
 				name, file1 = m.group(1), m.group(2)
 				message = ""
-				file2 = os.path.join(dirname, file1)
+				file2 = os.path.join(os.path.dirname(view.file_name()), file1)
 				# print("%s = %s" % (name, file1))
 				region = tp
 
