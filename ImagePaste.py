@@ -11,15 +11,16 @@ print(sys.getdefaultencoding())
 reload(sys)
 # sys.setdefaultencoding('utf-8')
 
-# package_file = os.path.normpath(os.path.abspath(__file__))
-# package_path = os.path.dirname(package_file)
-# lib_path =  os.path.join(package_path, "lib")
-# if lib_path not in sys.path:
-#     sys.path.append(lib_path)
-#     print(sys.path)
-# from PIL import ImageGrab
-# from PIL import ImageFile
-# from PIL import Image
+if sys.platform == 'win32':
+	package_file = os.path.normpath(os.path.abspath(__file__))
+	package_path = os.path.dirname(package_file)
+	lib_path =  os.path.join(package_path, "lib")
+	if lib_path not in sys.path:
+	    sys.path.append(lib_path)
+	    print(sys.path)
+	from PIL import ImageGrab
+	from PIL import ImageFile
+	from PIL import Image
 
 class ImageCommand(object):
 	def __init__(self, *args, **kwgs):
@@ -30,7 +31,7 @@ class ImageCommand(object):
 		self.image_dir_name = self.settings.get('image_dir_name', None)
 		if len(self.image_dir_name) == 0:
 			self.image_dir_name = None
-		print("get image_dir_name: %r"%self.image_dir_name)
+		print("[%d] get image_dir_name: %r"%(id(self.image_dir_name), self.image_dir_name))
 
 	def run_command(self, cmd):
 		cwd = os.path.dirname(self.view.file_name())
@@ -79,7 +80,7 @@ class ImagePasteCommand(ImageCommand, sublime_plugin.TextCommand):
 
 	def run(self, edit):
 		view = self.view
-		print(" image_dir_name: %r"%self.image_dir_name)
+		print("[%d] image_dir_name: %r"%(id(self.image_dir_name),self.image_dir_name))
 		rel_fn = self.paste()
 
 		if not rel_fn:
@@ -96,24 +97,25 @@ class ImagePasteCommand(ImageCommand, sublime_plugin.TextCommand):
 			
 
 	def paste(self):
-		# ImageFile.LOAD_TRUNCATED_IMAGES = True
-		dirname = os.path.dirname(__file__)
-		command = ['/usr/bin/python3', os.path.join(dirname, 'bin/imageutil.py'), 'save']
-		abs_fn, rel_fn = self.get_filename()
-		command.append(abs_fn)
+		if sys.platform != 'win32':
+			dirname = os.path.dirname(__file__)
+			command = ['/usr/bin/python3', os.path.join(dirname, 'bin/imageutil.py'), 'save']
+			abs_fn, rel_fn = self.get_filename()
+			command.append(abs_fn)
 
-		out = self.run_command(" ".join(command))
-		if out and out[:4] == "save":
-			return rel_fn
+			out = self.run_command(" ".join(command))
+			if out and out[:4] == "save":
+				return rel_fn
+		else: # win32
+			ImageFile.LOAD_TRUNCATED_IMAGES = True
+			im = ImageGrab.grabclipboard()
+			if im:
+				abs_fn, rel_fn = self.get_filename()
+				im.save(abs_fn,'PNG')	
+				return rel_fn
 
-		# im = ImageGrab.grabclipboard()
-		# if im:
-		# 	abs_fn, rel_fn = self.get_filename()
-		# 	im.save(abs_fn,'PNG')	
-		# 	return rel_fn
-		else:
-			print('clipboard buffer is not image!')
-			return None
+		print('clipboard buffer is not image!')
+		return None
 
 
 
