@@ -41,7 +41,7 @@ class ImageCommand(object):
 		try:
 		    outs, errs = proc.communicate(timeout=15)
 		    print("outs %r %r" % (outs, proc))
-		except TimeoutExpired:
+		except Exception:
 		    proc.kill()
 		    outs, errs = proc.communicate()
 		print("outs %r, errs %r" % (b'\n'.join(outs.split(b'\r\n')), errs))
@@ -68,7 +68,7 @@ class ImageCommand(object):
 			# relative file path
 			rel_filename = os.path.join("%s/%s%d.png" % (self.image_dir_name if self.image_dir_name else fn_without_ext, fn_without_ext, i))
 			# absolute file path
-			abs_filename = os.path.join(dirname, "%s%d.png" % ( fn_without_ext, i))
+			abs_filename = os.path.join(subdir_name, "%s%d.png" % (fn_without_ext, i))
 			if not os.path.exists(abs_filename):
 				break
 			i += 1
@@ -143,9 +143,10 @@ class ImageGrabCommand(ImageCommand, sublime_plugin.TextCommand):
 		abs_fn, rel_fn = self.get_filename()
 		tempfile1 = "/tmp/imagepaste1.png"
 		command.append(tempfile1)
+		print("command: ", command)
 
 		out = self.run_command(" ".join(command))
-		if out[:4] == "grab":
+		if out and out[:4] == "grab":
 			ret = sublime.ok_cancel_dialog("save to file?")
 			print("ret %r" % ret)
 			if ret:
