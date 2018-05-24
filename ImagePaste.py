@@ -22,6 +22,15 @@ reload(sys)
 # from PIL import Image
 
 class ImageCommand(object):
+	def __init__(self, *args, **kwgs):
+		super(ImageCommand, self).__init__(*args, **kwgs)
+		self.settings = sublime.load_settings('imagepaste.sublime-settings')
+
+		# get the image save dirname
+		self.image_dir_name = self.settings.get('image_dir_name', None)
+		if len(self.image_dir_name) == 0:
+			self.image_dir_name = None
+		print("get image_dir_name: %r"%self.image_dir_name)
 
 	def run_command(self, cmd):
 		cwd = os.path.dirname(self.view.file_name())
@@ -38,11 +47,41 @@ class ImageCommand(object):
 		if errs is None or len(errs) == 0:
 			return outs.decode()
 		
+	def get_filename(self):
+		view = self.view
+		filename = view.file_name()
+
+		# create dir in current path with the name of current filename
+		dirname, _ = os.path.splitext(filename)
+
+		# create new image file under currentdir/filename_without_ext/filename_without_ext%d.png
+		fn_without_ext = os.path.basename(dirname)
+		if self.image_dir_name is not None:
+			subdir_name = os.path.join(os.path.split(dirname)[0], self.image_dir_name)
+		else:
+			subdir_name = dirname
+		if not os.path.lexists(subdir_name):
+			os.mkdir(subdir_name)
+		i = 0
+		while True:
+			# relative file path
+			rel_filename = os.path.join("%s/%s%d.png" % (self.image_dir_name if self.image_dir_name else fn_without_ext, fn_without_ext, i))
+			# absolute file path
+			abs_filename = os.path.join(dirname, "%s%d.png" % ( fn_without_ext, i))
+			if not os.path.exists(abs_filename):
+				break
+			i += 1
+
+		print("save file: " + abs_filename + "\nrel " + rel_filename)
+		return abs_filename, rel_filename
 
 class ImagePasteCommand(ImageCommand, sublime_plugin.TextCommand):
+
 	def run(self, edit):
 		view = self.view
+		print(" image_dir_name: %r"%self.image_dir_name)
 		rel_fn = self.paste()
+
 		if not rel_fn:
 			view.run_command("paste")
 			return
@@ -64,7 +103,7 @@ class ImagePasteCommand(ImageCommand, sublime_plugin.TextCommand):
 		command.append(abs_fn)
 
 		out = self.run_command(" ".join(command))
-		if out[:4] == "save":
+		if out and out[:4] == "save":
 			return rel_fn
 
 		# im = ImageGrab.grabclipboard()
@@ -76,29 +115,7 @@ class ImagePasteCommand(ImageCommand, sublime_plugin.TextCommand):
 			print('clipboard buffer is not image!')
 			return None
 
-	def get_filename(self):
-		view = self.view
-		filename = view.file_name()
 
-		# create dir in current path with the name of current filename
-		dirname, _ = os.path.splitext(filename)
-
-		# create new image file under currentdir/filename_without_ext/filename_without_ext%d.png
-		fn_without_ext = os.path.basename(dirname)
-		if not os.path.lexists(dirname):
-			os.mkdir(dirname)
-		i = 0
-		while True:
-			# relative file path
-			rel_filename = os.path.join("%s/%s%d.png" % (fn_without_ext, fn_without_ext, i))
-			# absolute file path
-			abs_filename = os.path.join(dirname, "%s%d.png" % ( fn_without_ext, i))
-			if not os.path.exists(abs_filename):
-				break
-			i += 1
-
-		print("save file: " + abs_filename + "\nrel " + rel_filename)
-		return abs_filename, rel_filename
 
 class ImageGrabCommand(ImageCommand, sublime_plugin.TextCommand):
 	def run(self, edit):
@@ -143,29 +160,6 @@ class ImageGrabCommand(ImageCommand, sublime_plugin.TextCommand):
 			print('clipboard buffer is not image!')
 			return None
 
-	def get_filename(self):
-		view = self.view
-		filename = view.file_name()
-
-		# create dir in current path with the name of current filename
-		dirname, _ = os.path.splitext(filename)
-
-		# create new image file under currentdir/filename_without_ext/filename_without_ext%d.png
-		fn_without_ext = os.path.basename(dirname)
-		if not os.path.lexists(dirname):
-			os.mkdir(dirname)
-		i = 0
-		while True:
-			# relative file path
-			rel_filename = os.path.join("%s/%s%d.png" % (fn_without_ext, fn_without_ext, i))
-			# absolute file path
-			abs_filename = os.path.join(dirname, "%s%d.png" % ( fn_without_ext, i))
-			if not os.path.exists(abs_filename):
-				break
-			i += 1
-
-		print("save file: " + abs_filename + "\nrel " + rel_filename)
-		return abs_filename, rel_filename
 
 class ImagePreviewCommand(ImageCommand, sublime_plugin.TextCommand):
 	def __init__(self, *args):
@@ -186,6 +180,7 @@ class ImagePreviewCommand(ImageCommand, sublime_plugin.TextCommand):
 			line = v.substr(tp_line)
 			yield tp_line, line
 		raise StopIteration
+
 	def run(self, edit):
 		print("run phantom")
 		view = self.view
@@ -221,3 +216,4 @@ class ImagePreviewCommand(ImageCommand, sublime_plugin.TextCommand):
 		# self.phantom_set.update([phantom])
 		# view.show_popup('<img src="file://c://msys64/home/chenyu/diary/diary/diary8.jpg">')
 		self.displayed = not self.displayed
+

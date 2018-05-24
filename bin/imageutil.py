@@ -1,6 +1,7 @@
 """
 for Linux use
 pip install PyUserInput, pyscreenshot 
+and install python-pyqt4 as backend of pyscreenshot
 """
 import sys
 import os
@@ -37,7 +38,7 @@ def getSize(filename):
 		return (im.width, im.height)
 
 def saveImagefile(filename):
-	im = ImageGrab.grab()
+	im = ImageGrab.getclipboard()
 	if im:
 		print("save")
 		im.save(filename)
@@ -60,9 +61,9 @@ def saveImagefile2(filename, pt1, pt2):
 if __name__ == '__main__':
 	if len(sys.argv) == 3:
 		# python imageutil.py size filename
-		# print("begin ")
+		# print("begin %r" % sys.stdin.encoding)
 		if sys.argv[1] == 'size':
-			print("%r,%r" % getSize(sys.argv[2]))
+			print("%d,%d" % getSize(sys.argv[2]))
 		elif sys.argv[1] == 'save':
 			print(saveImagefile(sys.argv[2]))
 		elif sys.argv[1] == 'grab':
